@@ -168,8 +168,6 @@ async fn handle_events(config: Config, player: Player<'_>) {
                                 player.next();
                             }
                         },
-                        //MouseEventKind::ScrollDown => (),
-                        //MouseEventKind::ScrollUp => (),
                         _ => (),
                     }
                     Some(Ok(terminal_event)) => {
