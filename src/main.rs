@@ -119,7 +119,7 @@ fn print_image((config, cover_art): (Config, Vec<u8>)) {
 fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
     let chafa_output = process::Command::new("chafa")
         .arg(path)
-        .arg("--format").arg("symbols")
+        //.arg("--format").arg("symbols")
         .arg("--stretch")
         .arg("--size").arg((config.image_size[0]).to_string() + "x" + &(config.image_size[1]).to_string())
         .arg("--margin-bottom").arg((config.image_margins[2] + 1).to_string())
