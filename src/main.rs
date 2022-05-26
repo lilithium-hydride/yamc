@@ -1,5 +1,3 @@
-#![feature(iter_intersperse)]
-
 use std::{
     io::{stdout, Write},
     cmp,
@@ -67,7 +65,7 @@ fn print_metadata(config: Config, metadata: Metadata) {
     
     queue!(stdout,
         MoveTo(config.image_margins[1] + config.image_margins[3] + config.image_size[0], 3),
-        PrintStyledContent(metadata.artists().unwrap().iter().intersperse(&", ").map(|x| x.to_string()).collect::<String>().bold()),  // TODO: Verify that this works w/ supporting players
+        PrintStyledContent(metadata.artists().unwrap().join(", ").bold()),  // TODO: Verify that this works w/ supporting players
         PrintStyledContent(" - ".reset()),  // .reset() just applies zero formatting. Used instead of Print() for ease of future style modifications.
         PrintStyledContent(metadata.title().unwrap().reset()),
         Clear(ClearType::UntilNewLine),  // Get rid of any remaining text from a previous iteration
