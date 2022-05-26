@@ -1,12 +1,10 @@
 #![feature(iter_intersperse)]
 
 use std::{
-    io::{Cursor, stdout, Write},
+    io::{stdout, Write},
     cmp,
     process,
-    thread,
     time::Duration,
-    path::Path,
 };
 
 use futures::{future::FutureExt, select, StreamExt};
@@ -15,9 +13,10 @@ use futures_timer::Delay;
 use crossterm::{
     cursor::{self, MoveTo}, 
     event::{
-        self, 
         Event, 
-        EventStream, 
+        EventStream,
+        MouseButton,
+        MouseEventKind,
         KeyCode, 
         DisableMouseCapture, 
         EnableMouseCapture,
@@ -122,9 +121,9 @@ fn print_image((config, cover_art): (Config, Vec<u8>)) {
 fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
     let chafa_output = process::Command::new("chafa")
         .arg(path)
-        //.arg("--format").arg("symbols")
+        .arg("--format").arg("symbols")
         .arg("--stretch")
-        .arg("--size").arg((config.image_size[0]).to_string().to_owned() + "x" + &(config.image_size[1]).to_string())
+        .arg("--size").arg((config.image_size[0]).to_string() + "x" + &(config.image_size[1]).to_string())
         .arg("--margin-bottom").arg((config.image_margins[2] + 1).to_string())
         .arg("--margin-right").arg((config.image_margins[3] + 2).to_string())
         .output().unwrap();
@@ -148,7 +147,7 @@ async fn handle_events(config: Config, player: Player<'_>) {
     let mut reader = EventStream::new();
 
     loop {
-        let mut delay = Delay::new(Duration::from_millis(250)).fuse();  // Don't wait to run the first time
+        let mut delay = Delay::new(Duration::from_millis(100)).fuse();  // Don't wait to run the first time
         let mut terminal_event = reader.next().fuse();
 
 
@@ -159,8 +158,21 @@ async fn handle_events(config: Config, player: Player<'_>) {
             },
             maybe_event = terminal_event => {
                 match maybe_event {
+                    Some(Ok(Event::Mouse(mouse_event))) => match mouse_event.kind {
+                        MouseEventKind::Down(btn) if btn == MouseButton::Left => {
+                            if mouse_event.column >= 30 && mouse_event.column <= 32 && mouse_event.row == 6 {
+                                player.previous();
+                            } else if mouse_event.column == 37 && mouse_event.row == 6 {
+                                player.play_pause();
+                            } else if mouse_event.column >= 42 && mouse_event.column <= 44 && mouse_event.row == 6 {
+                                player.next();
+                            }
+                        },
+                        //MouseEventKind::ScrollDown => (),
+                        //MouseEventKind::ScrollUp => (),
+                        _ => (),
+                    }
                     Some(Ok(terminal_event)) => {
-                        
                         if terminal_event == Event::Key(KeyCode::Esc.into()) || terminal_event == Event::Key(KeyCode::Char('q').into()) {
                             break;
                         } else if terminal_event == Event::Key(KeyCode::Left.into()) {
@@ -170,7 +182,6 @@ async fn handle_events(config: Config, player: Player<'_>) {
 						} else if terminal_event == Event::Key(KeyCode::Char(' ').into()) {
                             player.play_pause();
 						}
-                        
                     }
                     Some(Err(e)) => println!("Error: {:?}\r", e),
                     None => break,
@@ -195,8 +206,6 @@ async fn main() -> Result<()> {
         (player, metadata)
     };
 
-
-    let terminal_size = terminal::size()?;
     execute!(stdout(), 
         cursor::Hide,
         EnterAlternateScreen, 
