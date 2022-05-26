@@ -135,11 +135,8 @@ fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
 }
 
 async fn print_all(config: Config, metadata: Metadata, status: PlaybackStatus) {
-
     print_image(image(config, metadata.art_url().unwrap()));
-
     print_metadata(config, metadata);
-
     print_buttons(config, status);
 }
 
@@ -147,7 +144,7 @@ async fn handle_events(config: Config, player: Player<'_>) {
     let mut reader = EventStream::new();
 
     loop {
-        let mut delay = Delay::new(Duration::from_millis(100)).fuse();  // Don't wait to run the first time
+        let mut delay = Delay::new(Duration::from_millis(100)).fuse();
         let mut terminal_event = reader.next().fuse();
 
 
@@ -170,14 +167,14 @@ async fn handle_events(config: Config, player: Player<'_>) {
                         },
                         _ => (),
                     }
-                    Some(Ok(terminal_event)) => {
-                        if terminal_event == Event::Key(KeyCode::Esc.into()) || terminal_event == Event::Key(KeyCode::Char('q').into()) {
+                    Some(Ok(keyboard_event)) => {
+                        if keyboard_event == Event::Key(KeyCode::Esc.into()) || keyboard_event == Event::Key(KeyCode::Char('q').into()) {
                             break;
-                        } else if terminal_event == Event::Key(KeyCode::Left.into()) {
+                        } else if keyboard_event == Event::Key(KeyCode::Left.into()) {
 							player.previous();
-						} else if terminal_event == Event::Key(KeyCode::Right.into()) {
+						} else if keyboard_event == Event::Key(KeyCode::Right.into()) {
                             player.next();
-						} else if terminal_event == Event::Key(KeyCode::Char(' ').into()) {
+						} else if keyboard_event == Event::Key(KeyCode::Char(' ').into()) {
                             player.play_pause();
 						}
                     }
