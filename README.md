@@ -3,23 +3,23 @@
 
 ***
 
-#### TUI for displaying information about and controlling currently playing media.
+TUI for displaying information about and controlling currently playing media.
 
 ![Image showing a preview of the application's interface](preview.png)
 
-## Usage
+### Usage
 
 Use <kbd>←</kbd> and <kbd>→</kbd> to skip to the previous and next track, respectively, and <kbd>Space</kbd> to play/pause. The onscreen buttons can also be clicked. 
 
 The screen can be refreshed with <kbd>R</kbd> if need be.
 
 
-## Configuration
+### Configuration
 
 The configuration file is located in `~/.config/yamc/yamc.ron`. An example can be found at https://github.com/lilithium-hydride/yamc/blob/master/yamc.ron.
 
 
-## Obtaining
+### Obtaining
 
 #### Runtime Dependencies
 <!--* [ffmpeg](https://ffmpeg.org) is required for `ffmpeg` cover art extraction, although any player which properly populates the `mpris:artUrl` field with a local file will work properly with the default `mpris_arturl` option.-->
@@ -35,6 +35,6 @@ curl https://raw.githubusercontent.com/lilithium-hydride/yamc/master/yamc.ron -o
 ```
 
 
-## Known Issues
+### Known Issues
 
 * Very rarely and seemingly at random, it will bug out and print stuff off on the right side of the window once before returning to normal. This can be cleared with <kbd>R</kbd> for the time being.
