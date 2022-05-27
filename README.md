@@ -47,5 +47,6 @@ Binaries are not currently provided, so you'll have to build the project yoursel
 ```sh
 git clone https://github.com/lilithium-hydride/yamc
 cd yamc
-cargo +nightly run
+cargo +nightly build --release
+./target/release/yamc
 ```
