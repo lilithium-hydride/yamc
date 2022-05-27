@@ -137,14 +137,23 @@ fn print_image((config, cover_art): (Config, Vec<u8>)) {
 }
 
 fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
-    let chafa_output = process::Command::new("chafa")
-        .arg(path)
-        //.arg("--format").arg("symbols")
-        .arg("--stretch")
-        .arg("--size").arg((config.image.size.0).to_string() + "x" + &(config.image.size.1).to_string())
-        .arg("--margin-bottom").arg((config.image.margins.bottom + 1).to_string())
-        .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
-        .output().unwrap();
+    let chafa_output = match config.image.force_symbols {
+        true => process::Command::new("chafa")
+            .arg(path)
+            .arg("--format").arg("symbols")
+            .arg("--stretch")
+            .arg("--size").arg((config.image.size.0).to_string() + "x" + &(config.image.size.1).to_string())
+            .arg("--margin-bottom").arg((config.image.margins.bottom + 1).to_string())
+            .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
+            .output().unwrap(),
+        false => process::Command::new("chafa")
+            .arg(path)
+            .arg("--stretch")
+            .arg("--size").arg((config.image.size.0).to_string() + "x" + &(config.image.size.1).to_string())
+            .arg("--margin-bottom").arg((config.image.margins.bottom + 1).to_string())
+            .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
+            .output().unwrap(),
+    };
     let chafa_err = String::from_utf8_lossy(&chafa_output.stderr);
     (config, chafa_output.stdout)
 }

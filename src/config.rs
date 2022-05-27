@@ -8,6 +8,7 @@ pub struct Config {
 
 #[derive(Clone, Copy, Debug, Deserialize)]
 pub struct Image {
+	pub force_symbols: bool,
 	pub margins: Box,
 	pub size: (u16, u16),
 }

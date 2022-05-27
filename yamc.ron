@@ -1,5 +1,6 @@
 (
     image: Image(
+        force_symbols: false,
         margins: Box(
             top: 1,
             bottom: 1,
