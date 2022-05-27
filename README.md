@@ -9,32 +9,12 @@
 
 ## Usage
 
-
 Use <kbd>←</kbd> and <kbd>→</kbd> to skip to the previous and next track, respectively, and <kbd>Space</kbd> to play/pause. The onscreen buttons can also be clicked. 
 
-<!-- Config file has not been set back up yet, leaving for later reference.
-## Configuration
-The configuration file is located in `~/.config/yamc/yamc.toml`. The below table shows the available options, but know that this will lag behind actual development a bit.
 
-| Key								| Default value		|
-|-----------------------------------|-------------------|
-| `image_display_backend`			| `'viu'`			|
-| `image_acquisition_method`		| `'mpris_arturl'`	|
-| `controls_button_prev`			| `'⏮'`				|
-| `controls_button_pauseplay`		| `'⏯'`				|
-| `controls_button_next`			| `'⏭'`				|
-| `controls_bg_active`				| `true`			|
-| `controls_bg_cap_left`			| `''`				|
-| `controls_bg_cap_right`			| `''`				|
-| `controls_bg_length`				| `13`				|
-| `controls_bg_cap_padding_left`	| `1`				|
-| `controls_bg_cap_padding_right`	| `1`				|
-| `image_margin_left`				| `2`				|
-| `image_margin_right`				| `3`				|
-| `image_margin_top`				| `2`				|
-| `image_margin_bottom`				| `3`				|
-| `image_size`						| `24`				|
--->
+## Configuration
+
+The configuration file is located in `~/.config/yamc/yamc.ron`. An example can be found at https://github.com/lilithium-hydride/yamc/blob/master/yamc.ron.
 
 
 ## Obtaining
@@ -48,5 +28,6 @@ Binaries are not currently provided, so you'll have to build the project yoursel
 git clone https://github.com/lilithium-hydride/yamc
 cd yamc
 cargo +nightly build --release
+curl https://raw.githubusercontent.com/lilithium-hydride/yamc/master/yamc.ron -o $XDG_CONFIG_HOME/yamc/yamc.ron --create-dirs
 ./target/release/yamc
 ```
