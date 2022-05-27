@@ -133,7 +133,12 @@ fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
 }
 
 async fn print_all(config: Config, metadata: Metadata, status: PlaybackStatus) {
-    print_image(image(config, metadata.art_url().unwrap()));
+    match metadata.art_url() {
+        Some(url) => print_image(image(config, url)),
+        None => {
+            // TODO: Try to rip art from the audio file. TianyiShi2001/audiotags may be able to do this without bringing in all of ffmpeg.
+        }
+    }
     print_metadata(config, metadata);
     print_buttons(config, status);
 }
