@@ -33,3 +33,8 @@ cargo +nightly build --release
 curl https://raw.githubusercontent.com/lilithium-hydride/yamc/master/yamc.ron -o $XDG_CONFIG_HOME/yamc/yamc.ron --create-dirs
 ./target/release/yamc
 ```
+
+
+## Known Issues
+
+* Very rarely and seemingly at random, it will bug out and print stuff off on the right side of the window once before returning to normal. This can be cleared with <kbd>R</kbd> for the time being.
