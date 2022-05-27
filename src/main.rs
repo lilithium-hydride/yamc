@@ -178,12 +178,20 @@ async fn handle_events(config: Config, player: Player<'_>) {
             maybe_event = terminal_event => {
                 match maybe_event {
                     Some(Ok(Event::Mouse(mouse_event))) => match mouse_event.kind {
-                        MouseEventKind::Down(btn) if btn == MouseButton::Left => {
-                            if mouse_event.column >= 30 && mouse_event.column <= 32 && mouse_event.row == 6 {
+                        MouseEventKind::Down(btn) if btn == MouseButton::Left =>{
+                            
+                            let prev_lbound = config.image.margins.left + config.image.size.0 + config.image.margins.right + 1 + config.controls_bar.button_prev.margins.0;
+                            let prev_ubound = prev_lbound + config.controls_bar.button_prev.padding.0 + 1 + config.controls_bar.button_prev.padding.1;
+                            let pp_lbound = prev_ubound + config.controls_bar.button_prev.margins.1 + config.controls_bar.button_playpause.margins.0;
+                            let pp_ubound = pp_lbound + config.controls_bar.button_playpause.padding.0 + 1 + config.controls_bar.button_playpause.padding.1;
+                            let next_lbound = pp_ubound + config.controls_bar.button_playpause.margins.1 + config.controls_bar.button_next.margins.0;
+                            let next_ubound = next_lbound + config.controls_bar.button_next.padding.0 + 1 + config.controls_bar.button_next.padding.1;
+                            
+                            if mouse_event.column >= prev_lbound && mouse_event.column < prev_ubound && mouse_event.row == 6{
                                 player.previous();
-                            } else if mouse_event.column == 37 && mouse_event.row == 6 {
+                            } else if mouse_event.column >= pp_lbound && mouse_event.column < pp_ubound && mouse_event.row == 6 {
                                 player.play_pause();
-                            } else if mouse_event.column >= 42 && mouse_event.column <= 44 && mouse_event.row == 6 {
+                            } else if mouse_event.column >= next_lbound && mouse_event.column < next_ubound && mouse_event.row == 6 {
                                 player.next();
                             }
                         },
