@@ -32,6 +32,7 @@
             margins: (3, 0),
         ),
         is_background_present: true,
+        are_caps_present: true,
         cap_left:'',
         cap_right: '',
     )

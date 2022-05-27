@@ -26,7 +26,8 @@ pub struct ControlsBar {
 	pub button_prev: Button,
 	pub button_playpause: ButtonSwitchable,
 	pub button_next: Button,
-	pub is_background_present: bool,  // TODO: Actually do something w/ this
+	pub is_background_present: bool,
+	pub are_caps_present: bool,
 	pub cap_left: char,
 	pub cap_right: char,
 }

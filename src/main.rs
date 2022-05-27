@@ -2,7 +2,6 @@ mod config;
 
 use crate::config::Config;
 
-
 use std::{
     io::{stdout, Write},
     cmp,
@@ -43,6 +42,7 @@ use crossterm::{
 };
 
 use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
+use tap::{Pipe};
 
 
 struct CleanUp;
@@ -82,14 +82,14 @@ fn print_buttons(config: Config, status: PlaybackStatus) {
     queue!(stdout,
         MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, config.metadata.vertical_margins.0 + config.metadata.interline_gap + 2 + config.metadata.vertical_margins.1),
         
-        PrintStyledContent(config.controls_bar.cap_left.magenta()),
+        PrintStyledContent(if config.controls_bar.are_caps_present {config.controls_bar.cap_left.magenta()} else {'\0'.reset()}),
         
         PrintStyledContent((format!(
             "{}{}{}",
             " ".repeat((config.controls_bar.button_prev.margins.0 + config.controls_bar.button_prev.padding.0).into()),
             config.controls_bar.button_prev.icon,
             " ".repeat((config.controls_bar.button_prev.margins.1 + config.controls_bar.button_prev.padding.1).into()),
-            )).black().on_magenta()),
+            )).pipe(|x| if config.controls_bar.is_background_present {x.black().on_magenta()} else {x.reset()})),
         
         PrintStyledContent((format!(
             "{}{}{}",
@@ -99,16 +99,16 @@ fn print_buttons(config: Config, status: PlaybackStatus) {
                 PlaybackStatus::Paused|PlaybackStatus::Stopped => config.controls_bar.button_playpause.icon_state2,
             },
             " ".repeat((config.controls_bar.button_playpause.margins.1 + config.controls_bar.button_playpause.padding.1).into()),
-            )).black().on_magenta()),
+            )).pipe(|x| if config.controls_bar.is_background_present {x.black().on_magenta()} else {x.reset()})),
         
         PrintStyledContent((format!(
             "{}{}{}",
             " ".repeat((config.controls_bar.button_next.margins.0 + config.controls_bar.button_next.padding.0).into()),
             config.controls_bar.button_next.icon,
             " ".repeat((config.controls_bar.button_next.margins.1 + config.controls_bar.button_next.padding.1).into()),
-            )).black().on_magenta()),
+            )).pipe(|x| if config.controls_bar.is_background_present {x.black().on_magenta()} else {x.reset()})),
         
-        PrintStyledContent(config.controls_bar.cap_right.magenta()),
+        PrintStyledContent(if config.controls_bar.are_caps_present {config.controls_bar.cap_right.magenta()} else {'\0'.reset()}),
     );
     
     stdout.flush();
@@ -137,24 +137,14 @@ fn print_image((config, cover_art): (Config, Vec<u8>)) {
 }
 
 fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
-    // There's gotta be a cleaner way of doing this.
-    let chafa_output = match config.image.force_symbols {
-        true => process::Command::new("chafa")
-            .arg(path)
-            .arg("--format").arg("symbols")
-            .arg("--stretch")
-            .arg("--size").arg((config.image.size.0).to_string() + "x" + &(config.image.size.1).to_string())
-            .arg("--margin-bottom").arg((config.image.margins.bottom + 1).to_string())
-            .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
-            .output().unwrap(),
-        false => process::Command::new("chafa")
-            .arg(path)
-            .arg("--stretch")
-            .arg("--size").arg((config.image.size.0).to_string() + "x" + &(config.image.size.1).to_string())
-            .arg("--margin-bottom").arg((config.image.margins.bottom + 1).to_string())
-            .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
-            .output().unwrap(),
-    };
+    let chafa_output = process::Command::new("chafa")
+        .arg(path)
+        .pipe(|x| if config.image.force_symbols {x.arg("--format").arg("symbols")} else {x})
+        .arg("--stretch")
+        .arg("--size").arg((config.image.size.0).to_string() + "x" + &(config.image.size.1).to_string())
+        .arg("--margin-bottom").arg((config.image.margins.bottom + 1).to_string())
+        .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
+        .output().unwrap();
     //let chafa_err = String::from_utf8_lossy(&chafa_output.stderr);
     (config, chafa_output.stdout)
 }
