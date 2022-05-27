@@ -11,6 +11,8 @@
 
 Use <kbd>←</kbd> and <kbd>→</kbd> to skip to the previous and next track, respectively, and <kbd>Space</kbd> to play/pause. The onscreen buttons can also be clicked. 
 
+The screen can be refreshed with <kbd>R</kbd> if need be.
+
 
 ## Configuration
 
