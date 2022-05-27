@@ -146,9 +146,6 @@ fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
         .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
         .output().unwrap();
     let chafa_err = String::from_utf8_lossy(&chafa_output.stderr);
-    if chafa_err != "" {
-        println!("{}", chafa_err);
-    }
     (config, chafa_output.stdout)
 }
 
