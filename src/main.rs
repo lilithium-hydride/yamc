@@ -64,12 +64,12 @@ fn print_metadata(config: Config, metadata: Metadata) {
     let mut stdout = stdout();
     
     queue!(stdout,
-        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, 3),
+        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, config.metadata.vertical_margins.0),
         PrintStyledContent(metadata.artists().unwrap().join(", ").bold()),  // TODO: Verify that this works w/ supporting players
         PrintStyledContent(" - ".reset()),  // .reset() just applies zero formatting. Used instead of Print() for ease of future style modifications.
         PrintStyledContent(metadata.title().unwrap().reset()),
         Clear(ClearType::UntilNewLine),  // Get rid of any remaining text from a previous iteration
-        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, 4),
+        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, config.metadata.vertical_margins.0 + config.metadata.interline_gap + 1),
         PrintStyledContent(metadata.album_name().unwrap().italic()),
         Clear(ClearType::UntilNewLine),
     );
@@ -80,7 +80,7 @@ fn print_buttons(config: Config, status: PlaybackStatus) {
     let mut stdout = stdout();
     //  ⏮          ⏭ 
     queue!(stdout,
-        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, 6),
+        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, config.metadata.vertical_margins.0 + config.metadata.interline_gap + 2 + config.metadata.vertical_margins.1),
         
         PrintStyledContent(config.controls_bar.cap_left.magenta()),
         
@@ -137,6 +137,7 @@ fn print_image((config, cover_art): (Config, Vec<u8>)) {
 }
 
 fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
+    // There's gotta be a cleaner way of doing this.
     let chafa_output = match config.image.force_symbols {
         true => process::Command::new("chafa")
             .arg(path)

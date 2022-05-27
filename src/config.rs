@@ -2,7 +2,9 @@ use serde::Deserialize;
 
 #[derive(Clone, Copy, Debug, Deserialize)]
 pub struct Config {
+	pub refresh_rate_ms: u16,
 	pub image: Image,
+	pub metadata: Metadata,
 	pub controls_bar: ControlsBar,
 }
 
@@ -11,6 +13,12 @@ pub struct Image {
 	pub force_symbols: bool,
 	pub margins: Box,
 	pub size: (u16, u16),
+}
+
+#[derive(Clone, Copy, Debug, Deserialize)]
+pub struct Metadata {
+	pub vertical_margins: (u16, u16),  // Top, bottom
+	pub interline_gap: u16,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize)]
