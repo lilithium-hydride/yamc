@@ -1,8 +1,14 @@
+mod config;
+
+use crate::config::Config;
+
+
 use std::{
     io::{stdout, Write},
     cmp,
     process,
     time::Duration,
+    fs::File,
 };
 
 use futures::{future::FutureExt, select, StreamExt};
@@ -39,12 +45,6 @@ use crossterm::{
 use mpris::{Metadata, PlaybackStatus, Player, PlayerFinder};
 
 
-#[derive(Clone, Copy)]
-struct Config {
-    image_margins: [u16; 4],  // Top, left, bottom, right
-    image_size: [u16; 2],
-}
-
 struct CleanUp;
 impl Drop for CleanUp {
     fn drop(&mut self) {
@@ -64,12 +64,12 @@ fn print_metadata(config: Config, metadata: Metadata) {
     let mut stdout = stdout();
     
     queue!(stdout,
-        MoveTo(config.image_margins[1] + config.image_margins[3] + config.image_size[0], 3),
+        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, 3),
         PrintStyledContent(metadata.artists().unwrap().join(", ").bold()),  // TODO: Verify that this works w/ supporting players
         PrintStyledContent(" - ".reset()),  // .reset() just applies zero formatting. Used instead of Print() for ease of future style modifications.
         PrintStyledContent(metadata.title().unwrap().reset()),
         Clear(ClearType::UntilNewLine),  // Get rid of any remaining text from a previous iteration
-        MoveTo(config.image_margins[1] + config.image_margins[3] + config.image_size[0], 4),
+        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, 4),
         PrintStyledContent(metadata.album_name().unwrap().italic()),
         Clear(ClearType::UntilNewLine),
     );
@@ -78,17 +78,37 @@ fn print_metadata(config: Config, metadata: Metadata) {
 
 fn print_buttons(config: Config, status: PlaybackStatus) {
     let mut stdout = stdout();
-    
+    //  ⏮          ⏭ 
     queue!(stdout,
-        MoveTo(config.image_margins[1] + config.image_margins[3] + config.image_size[0], 6),
-        PrintStyledContent("".magenta()),
-        PrintStyledContent(" ⏮     ".black().on_magenta()),
-        PrintStyledContent(match status {
-                PlaybackStatus::Playing => "",
-                PlaybackStatus::Paused|PlaybackStatus::Stopped => ""
-        }.black().on_magenta()),
-        PrintStyledContent("     ⏭ ".black().on_magenta()),
-        PrintStyledContent("".magenta()),
+        MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, 6),
+        
+        PrintStyledContent(config.controls_bar.cap_left.magenta()),
+        
+        PrintStyledContent((format!(
+            "{}{}{}",
+            " ".repeat((config.controls_bar.button_prev.margins.0 + config.controls_bar.button_prev.padding.0).into()),
+            config.controls_bar.button_prev.icon,
+            " ".repeat((config.controls_bar.button_prev.margins.1 + config.controls_bar.button_prev.padding.1).into()),
+            )).black().on_magenta()),
+        
+        PrintStyledContent((format!(
+            "{}{}{}",
+            " ".repeat((config.controls_bar.button_playpause.margins.0 + config.controls_bar.button_playpause.padding.0).into()),
+            match status {
+                PlaybackStatus::Playing => config.controls_bar.button_playpause.icon_state1,
+                PlaybackStatus::Paused|PlaybackStatus::Stopped => config.controls_bar.button_playpause.icon_state2,
+            },
+            " ".repeat((config.controls_bar.button_playpause.margins.1 + config.controls_bar.button_playpause.padding.1).into()),
+            )).black().on_magenta()),
+        
+        PrintStyledContent((format!(
+            "{}{}{}",
+            " ".repeat((config.controls_bar.button_next.margins.0 + config.controls_bar.button_next.padding.0).into()),
+            config.controls_bar.button_next.icon,
+            " ".repeat((config.controls_bar.button_next.margins.1 + config.controls_bar.button_next.padding.1).into()),
+            )).black().on_magenta()),
+        
+        PrintStyledContent(config.controls_bar.cap_right.magenta()),
     );
     
     stdout.flush();
@@ -99,13 +119,13 @@ fn print_image((config, cover_art): (Config, Vec<u8>)) {
     
     queue!(stdout, 
         MoveTo(0, 0),
-        Print("\r\n".repeat(config.image_margins[0] as usize)),
+        Print("\r\n".repeat(config.image.margins.top as usize)),
     );
     
     let mut cover_art_iter = cover_art.split(|x| x == &b'\n').peekable();
     while let Some(line) = cover_art_iter.next() {
         queue!(stdout, 
-            Print(" ".repeat(config.image_margins[1] as usize)),
+            Print(" ".repeat(config.image.margins.left as usize)),
             Print(String::from_utf8_lossy(line)),
         );
         if cover_art_iter.peek().is_some() {
@@ -113,7 +133,7 @@ fn print_image((config, cover_art): (Config, Vec<u8>)) {
         }
     }
     
-    stdout.queue(Print("\r\n".repeat(cmp::max(0, config.image_margins[2] as usize - 1))));
+    stdout.queue(Print("\r\n".repeat(cmp::max(0, config.image.margins.bottom as usize - 1))));
 }
 
 fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
@@ -121,9 +141,9 @@ fn image(config: Config, path: &str) -> (Config, Vec<u8>) {
         .arg(path)
         //.arg("--format").arg("symbols")
         .arg("--stretch")
-        .arg("--size").arg((config.image_size[0]).to_string() + "x" + &(config.image_size[1]).to_string())
-        .arg("--margin-bottom").arg((config.image_margins[2] + 1).to_string())
-        .arg("--margin-right").arg((config.image_margins[3] + 2).to_string())
+        .arg("--size").arg((config.image.size.0).to_string() + "x" + &(config.image.size.1).to_string())
+        .arg("--margin-bottom").arg((config.image.margins.bottom + 1).to_string())
+        .arg("--margin-right").arg((config.image.margins.right + 2).to_string())
         .output().unwrap();
     let chafa_err = String::from_utf8_lossy(&chafa_output.stderr);
     if chafa_err != "" {
@@ -149,7 +169,6 @@ async fn handle_events(config: Config, player: Player<'_>) {
     loop {
         let mut delay = Delay::new(Duration::from_millis(100)).fuse();
         let mut terminal_event = reader.next().fuse();
-
 
         select! {
             _ = delay => {
@@ -192,10 +211,17 @@ async fn handle_events(config: Config, player: Player<'_>) {
 #[async_std::main]
 async fn main() -> Result<()> {
     let _clean_up = CleanUp;
-    let config = Config {
-        image_margins: [1, 2, 1, 3],
-        image_size: [24, 12],
+    
+    let config_path = format!("{}/yamc/yamc.ron", env!("XDG_CONFIG_HOME"));
+    let config_file = File::open(&config_path).expect(&*format!("Failed to open configuration file at {}", config_path));
+    let config: Config = match ron::de::from_reader(config_file) {
+        Ok(x) => x,
+        Err(e) => {
+            println!("Failed to load settings from config: {}", e);
+            process::exit(1);
+        }
     };
+    
 
     let player_stuff = async {
         let player = PlayerFinder::new().expect("Failed to connect to D-Bus")

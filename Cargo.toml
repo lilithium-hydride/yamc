@@ -9,6 +9,8 @@ edition = "2021"
 mpris = "2.0.0-rc2"
 futures = "0.3.21"
 futures-timer = "3.0.2"
+ron = "0.7.0"
+serde = { version = "1", features = ["derive"] }
 
 [dependencies.crossterm]
 version = "0.23.2"
