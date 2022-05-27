@@ -82,14 +82,14 @@ fn print_buttons(config: Config, status: PlaybackStatus) {
     queue!(stdout,
         MoveTo(config.image.margins.left + config.image.margins.right + config.image.size.0, config.metadata.vertical_margins.0 + config.metadata.interline_gap + 2 + config.metadata.vertical_margins.1),
         
-        PrintStyledContent(if config.controls_bar.are_caps_present {config.controls_bar.cap_left.magenta()} else {'\0'.reset()}),
+        PrintStyledContent(if config.controls_bar.use_caps {config.controls_bar.cap_left.magenta()} else {'\0'.reset()}),
         
         PrintStyledContent((format!(
             "{}{}{}",
             " ".repeat((config.controls_bar.button_prev.margins.0 + config.controls_bar.button_prev.padding.0).into()),
             config.controls_bar.button_prev.icon,
             " ".repeat((config.controls_bar.button_prev.margins.1 + config.controls_bar.button_prev.padding.1).into()),
-            )).pipe(|x| if config.controls_bar.is_background_present {x.black().on_magenta()} else {x.reset()})),
+            )).pipe(|x| if config.controls_bar.use_background {x.black().on_magenta()} else {x.reset()})),
         
         PrintStyledContent((format!(
             "{}{}{}",
@@ -99,16 +99,16 @@ fn print_buttons(config: Config, status: PlaybackStatus) {
                 PlaybackStatus::Paused|PlaybackStatus::Stopped => config.controls_bar.button_playpause.icon_state2,
             },
             " ".repeat((config.controls_bar.button_playpause.margins.1 + config.controls_bar.button_playpause.padding.1).into()),
-            )).pipe(|x| if config.controls_bar.is_background_present {x.black().on_magenta()} else {x.reset()})),
+            )).pipe(|x| if config.controls_bar.use_background {x.black().on_magenta()} else {x.reset()})),
         
         PrintStyledContent((format!(
             "{}{}{}",
             " ".repeat((config.controls_bar.button_next.margins.0 + config.controls_bar.button_next.padding.0).into()),
             config.controls_bar.button_next.icon,
             " ".repeat((config.controls_bar.button_next.margins.1 + config.controls_bar.button_next.padding.1).into()),
-            )).pipe(|x| if config.controls_bar.is_background_present {x.black().on_magenta()} else {x.reset()})),
+            )).pipe(|x| if config.controls_bar.use_background {x.black().on_magenta()} else {x.reset()})),
         
-        PrintStyledContent(if config.controls_bar.are_caps_present {config.controls_bar.cap_right.magenta()} else {'\0'.reset()}),
+        PrintStyledContent(if config.controls_bar.use_caps {config.controls_bar.cap_right.magenta()} else {'\0'.reset()}),
     );
     
     stdout.flush();
