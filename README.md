@@ -22,7 +22,6 @@ The configuration file is located in `~/.config/yamc/yamc.ron`. An example can b
 ### Obtaining
 
 #### Runtime Dependencies
-<!--* [ffmpeg](https://ffmpeg.org) is required for `ffmpeg` cover art extraction, although any player which properly populates the `mpris:artUrl` field with a local file will work properly with the default `mpris_arturl` option.-->
 * [Chafa](https://github.com/hpjansson/chafa/) is required to display cover art.
 
 Binaries are not currently provided, so you'll have to build the project yourself.
