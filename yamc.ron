@@ -1,0 +1,32 @@
+(
+    image: Image(
+        margins: Box(
+            top: 1,
+            bottom: 1,
+            left: 2,
+            right: 3,
+        ),
+        size: (24, 12),
+    ),
+    controls_bar: ControlsBar(
+        button_prev: Button(
+            icon: '⏮',
+            padding: (1, 1),
+            margins: (0, 3),
+        ),
+        button_playpause: ButtonSwitchable(
+            icon_state1: '',
+            icon_state2: '▶',
+            padding: (1, 1),
+            margins: (0, 0),
+        ),
+        button_next: Button(
+            icon: '⏭',
+            padding: (1, 1),
+            margins: (3, 0),
+        ),
+        is_background_present: true,
+        cap_left:'',
+        cap_right: '',
+    )
+)
