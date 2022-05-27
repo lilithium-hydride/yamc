@@ -165,7 +165,8 @@ async fn print_all(config: Config, metadata: Metadata, status: PlaybackStatus) {
 
 async fn handle_events(config: Config, player: Player<'_>) {
     let mut reader = EventStream::new();
-
+    let mut stdout = stdout();
+    
     loop {
         let mut delay = Delay::new(Duration::from_millis(100)).fuse();
         let mut terminal_event = reader.next().fuse();
@@ -177,7 +178,7 @@ async fn handle_events(config: Config, player: Player<'_>) {
             },
             maybe_event = terminal_event => {
                 match maybe_event {
-                    Some(Ok(Event::Mouse(mouse_event))) => match mouse_event.kind {
+                    Some(Ok(Event::Mouse(event))) => match event.kind {
                         MouseEventKind::Down(btn) if btn == MouseButton::Left =>{
                             
                             let prev_lbound = config.image.margins.left + config.image.size.0 + config.image.margins.right + 1 + config.controls_bar.button_prev.margins.0;
@@ -187,27 +188,31 @@ async fn handle_events(config: Config, player: Player<'_>) {
                             let next_lbound = pp_ubound + config.controls_bar.button_playpause.margins.1 + config.controls_bar.button_next.margins.0;
                             let next_ubound = next_lbound + config.controls_bar.button_next.padding.0 + 1 + config.controls_bar.button_next.padding.1;
                             
-                            if mouse_event.column >= prev_lbound && mouse_event.column < prev_ubound && mouse_event.row == 6{
+                            if event.column >= prev_lbound && event.column < prev_ubound && event.row == 6{
                                 player.previous();
-                            } else if mouse_event.column >= pp_lbound && mouse_event.column < pp_ubound && mouse_event.row == 6 {
+                            } else if event.column >= pp_lbound && event.column < pp_ubound && event.row == 6 {
                                 player.play_pause();
-                            } else if mouse_event.column >= next_lbound && mouse_event.column < next_ubound && mouse_event.row == 6 {
+                            } else if event.column >= next_lbound && event.column < next_ubound && event.row == 6 {
                                 player.next();
                             }
                         },
                         _ => (),
                     }
-                    Some(Ok(keyboard_event)) => {
-                        if keyboard_event == Event::Key(KeyCode::Esc.into()) || keyboard_event == Event::Key(KeyCode::Char('q').into()) {
+                    Some(Ok(Event::Key(event))) => {
+                        if event == KeyCode::Esc.into() || event == KeyCode::Char('q').into() {
                             break;
-                        } else if keyboard_event == Event::Key(KeyCode::Left.into()) {
+                        } else if event == KeyCode::Left.into() {
 							player.previous();
-						} else if keyboard_event == Event::Key(KeyCode::Right.into()) {
+						} else if event == KeyCode::Right.into() {
                             player.next();
-						} else if keyboard_event == Event::Key(KeyCode::Char(' ').into()) {
+						} else if event == KeyCode::Char(' ').into() {
                             player.play_pause();
+						} else if event == KeyCode::Char('r').into() {
+                            stdout.execute(Clear(ClearType::All));
+                            async_std::task::spawn(print_all(config, player.get_metadata().unwrap(), player.get_playback_status().unwrap()));
 						}
                     }
+                    Some(Ok(Event::Resize(_, size_y))) => {}
                     Some(Err(e)) => println!("Error: {:?}\r", e),
                     None => break,
                 }
