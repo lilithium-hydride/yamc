@@ -199,18 +199,17 @@ async fn handle_events(config: Config, player: Player<'_>) {
                         _ => (),
                     }
                     Some(Ok(Event::Key(event))) => {
-                        if event == KeyCode::Esc.into() || event == KeyCode::Char('q').into() {
-                            break;
-                        } else if event == KeyCode::Left.into() {
-							player.previous();
-						} else if event == KeyCode::Right.into() {
-                            player.next();
-						} else if event == KeyCode::Char(' ').into() {
-                            player.play_pause();
-						} else if event == KeyCode::Char('r').into() {
-                            stdout.execute(Clear(ClearType::All));
-                            async_std::task::spawn(print_all(config, player.get_metadata().unwrap(), player.get_playback_status().unwrap()));
-						}
+                        match event.code {
+                            KeyCode::Esc | KeyCode::Char('q') => break,
+                            KeyCode::Left      => { player.previous(); },
+                            KeyCode::Right     => { player.next(); },
+                            KeyCode::Char(' ') => { player.play_pause(); },
+                            KeyCode::Char('r') => {
+                                stdout.execute(Clear(ClearType::All));
+                                async_std::task::spawn(print_all(config, player.get_metadata().unwrap(), player.get_playback_status().unwrap()));
+                            },
+                            _ => {}
+                        }
                     }
                     Some(Ok(Event::Resize(_, size_y))) => {}
                     Some(Err(e)) => println!("Error: {:?}\r", e),
